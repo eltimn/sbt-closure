@@ -7,15 +7,15 @@
 
 ## Installation
 
-In your plugin definition, add
-
-    addSbtPlugin("org.scala-sbt" % "sbt-closure" % "0.1.0")
-
-If you have not already added the sbt community plugin resolver, add this here as well with
+If you have not already added the sbt community plugin resolver to your plugin definition file, add this
 
     resolvers += Resolver.url("sbt-plugin-releases",
       new URL("http://scalasbt.artifactoryonline.com/scalasbt/sbt-plugin-releases/"))(
         Resolver.ivyStylePatterns)
+
+Then add this
+
+    addSbtPlugin("org.scala-sbt" % "sbt-closure" % "0.1.0")
 
 Then in your build definition, add
 
@@ -73,10 +73,6 @@ If you're using [xsbt-web-plugin](https://github.com/siasia/xsbt-web-plugin "xsb
 To change the default location of compiled js files, add the following to your build definition
 
     (resourceManaged in (Compile, ClosureKeys.closure)) <<= (crossTarget in Compile)(_ / "your_preference" / "js")
-
-## Issues
-
-Have an issue? [Tell me about it](https://github.com/eltimn/sbt-closure/issues "Report Issue")
 
 ## Acknowledgements
 

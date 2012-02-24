@@ -5,4 +5,4 @@ libs/foo.js
 ../bar.js
 
 # url
-https://ajax.googleapis.com/ajax/libs/chrome-frame/1.0.2/CFInstall.js
+https://raw.github.com/eltimn/sbt-closure/master/src/main/resources/test-script.js
