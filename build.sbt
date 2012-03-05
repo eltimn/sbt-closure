@@ -5,7 +5,7 @@ organization := "org.scala-sbt"
 name := "sbt-closure"
 
 version <<= sbtVersion(v =>
-  if(v.startsWith("0.11")) "0.1.0"
+  if(v.startsWith("0.11")) "0.1.1"
   else error("unsupported sbt version %s" format v)
 )
 
@@ -22,8 +22,13 @@ seq(lsSettings:_*)
 (description in LsKeys.lsync) :=
   "Sbt plugin for compiling JavaScript manifest sources using Google Closure Compiler"
 
-homepage :=
-  Some(url("https://github.com/eltimn/sbt-closure"))
+homepage := Some(url("https://github.com/eltimn/sbt-closure"))
+
+publishTo := Some(Resolver.url("sbt-plugin-releases", new URL("http://scalasbt.artifactoryonline.com/scalasbt/sbt-plugin-releases/"))(Resolver.ivyStylePatterns))
+
+publishMavenStyle := false
+
+publishArtifact in Test := false
 
 licenses in GlobalScope += "Apache License 2.0" -> url("https://github.com/eltimn/sbt-closure/raw/master/LICENSE")
 
@@ -36,7 +41,7 @@ pomExtra := (
     <developer>
       <id>eltimn</id>
       <name>Tim Nelson</name>
-      <url>http://eltimn.com</url>
+      <url>http://eltimn.com/</url>
     </developer>
   </developers>
 )

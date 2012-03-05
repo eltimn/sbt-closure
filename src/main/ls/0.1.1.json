@@ -2,7 +2,7 @@
 {
  "organization":"org.scala-sbt",
  "name":"sbt-closure",
- "version":"0.1.0",
+ "version":"0.1.1",
  "description":"Sbt plugin for compiling JavaScript manifest sources using Google Closure Compiler",
  "site":"https://github.com/eltimn/sbt-closure",
  "tags":["sbt","closure"],

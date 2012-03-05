@@ -15,8 +15,9 @@ object SbtClosurePlugin extends Plugin {
     lazy val closure = TaskKey[Seq[File]]("closure", "Compiles .jsm javascript manifest files")
     lazy val charset = SettingKey[Charset]("charset", "Sets the character encoding used in file IO. Defaults to utf-8")
     lazy val downloadDirectory = SettingKey[File]("download-dir", "Directory to download ManifestUrls to")
-    lazy val prettyPrint = SettingKey[Boolean]("closure-pretty-print", "Whether to pretty print JavaScript (default false)")
-    lazy val closureOptions = SettingKey[CompilerOptions]("closure-options", "Compiler options")
+    lazy val prettyPrint = SettingKey[Boolean]("pretty-print", "Whether to pretty print JavaScript (default false)")
+    lazy val closureOptions = SettingKey[CompilerOptions]("options", "Compiler options")
+    lazy val outAppend = SettingKey[String]("outappend", "String to append to output filename (before file extension)")
   }
 
   def closureOptionsSetting: Initialize[CompilerOptions] =
@@ -50,6 +51,7 @@ object SbtClosurePlugin extends Plugin {
     closureOptions <<= closureOptionsSetting,
     includeFilter in closure := "*.jsm",
     excludeFilter in closure := (".*" - ".") || HiddenFileFilter,
+    outAppend in closure := "",
     unmanagedSources in closure <<= closureSourcesTask,
     clean in closure <<= closureCleanTask,
     closure <<= closureCompilerTask
@@ -65,9 +67,23 @@ object SbtClosurePlugin extends Plugin {
   private def closureCompilerTask =
     (streams, sourceDirectory in closure, resourceManaged in closure,
      includeFilter in closure, excludeFilter in closure, charset in closure,
-     downloadDirectory in closure, closureOptions in closure) map {
-      (out, sourceDir, targetDir, incl, excl, cs, dldir, co) =>
-        compileChanged(sourceDir, targetDir, incl, excl, cs, dldir, out.log, co)
+     downloadDirectory in closure, closureOptions in closure, outAppend in closure) map {
+      (out, sources, target, include, exclude, charset, downloadDir, options, outAppend) => {
+        // compile changed sources
+        (for {
+          manifest <- sources.descendentsExcept(include, exclude).get
+          outFile <- computeOutFile(sources, manifest, target, outAppend)
+          if (manifest newerThan outFile)
+        } yield { (manifest, outFile) }) match {
+          case Nil =>
+            out.log.debug("No JavaScript manifest files to compile")
+          case xs =>
+            out.log.info("Compiling %d jsm files to %s" format(xs.size, target))
+            xs map doCompile(downloadDir, charset, out.log, options)
+            out.log.debug("Compiled %s jsm files" format xs.size)
+        }
+        compiled(target)
+      }
     }
 
   private def closureSourcesTask =
@@ -75,22 +91,6 @@ object SbtClosurePlugin extends Plugin {
       (sourceDir, incl, excl) =>
          sourceDir.descendentsExcept(incl, excl).get
     }
-
-  private def compileChanged(sources: File, target: File, include: FileFilter, exclude: FileFilter, charset: Charset, downloadDir: File, log: Logger, options: CompilerOptions) = {
-    (for {
-      manifest <- sources.descendentsExcept(include, exclude).get
-      javascript <- javascript(sources, manifest, target)
-      if (manifest newerThan javascript)
-    } yield { (manifest, javascript) }) match {
-      case Nil =>
-        log.info("No JavaScript manifest files to compile")
-      case xs =>
-        log.info("Compiling %d jsm files to %s" format(xs.size, target))
-        xs map doCompile(downloadDir, charset, log, options)
-        log.debug("Compiled %s jsm files" format xs.size)
-    }
-    compiled(target)
-  }
 
   private def doCompile(downloadDir: File, charset: Charset, log: Logger, options: CompilerOptions)(pair: (File, File)) = {
     val (jsm, js) = pair
@@ -102,6 +102,11 @@ object SbtClosurePlugin extends Plugin {
 
   private def compiled(under: File) = (under ** "*.js").get
 
-  private def javascript(sources: File, manifest: File, targetDir: File) =
-    Some(new File(targetDir, IO.relativize(sources, manifest).get.replaceAll("""[.]jsm(anifest)?$""", ".js")))
+  private def computeOutFile(sources: File, manifest: File, targetDir: File, outAppend: String): Option[File] = {
+    val outFile = IO.relativize(sources, manifest).get.replaceAll("""[.]jsm(anifest)?$""", "") + {
+      if (outAppend.length > 0) "-%s.js".format(outAppend)
+      else ".js"
+    }
+    Some(new File(targetDir, outFile))
+  }
 }
