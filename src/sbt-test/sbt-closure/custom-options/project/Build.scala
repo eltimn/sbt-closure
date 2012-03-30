@@ -1,7 +1,7 @@
 import sbt._
 import sbt.Keys._
 
-import com.google.javascript.jscomp.CompilerOptions
+import com.google.javascript.jscomp.{CompilationLevel, CompilerOptions}
 
 object CustomOptionsBuild extends Build {
 
@@ -10,7 +10,7 @@ object CustomOptionsBuild extends Build {
     */
   lazy val myClosureOptions = {
     val opts = new CompilerOptions
-    opts.prettyPrint = true
+    CompilationLevel.WHITESPACE_ONLY.setOptionsForCompilationLevel(opts)
     opts
   }
 

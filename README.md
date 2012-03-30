@@ -74,6 +74,50 @@ To change the default location of compiled js files, add the following to your b
 
     (resourceManaged in (Compile, ClosureKeys.closure)) <<= (crossTarget in Compile)(_ / "your_preference" / "js")
 
+## File versioning
+
+The plugin has a setting for a file suffix that is appended to the output file name before the file extension.
+This allows you to update the version whenever you make changes to your Javascript files. Useful when you are
+caching your js files in production. To use, add the following to your build.sbt:
+
+    (ClosureKeys.suffix in (Compile, ClosureKeys.closure)) := "4"
+
+Then if you have manifest file `src/main/javascript/script.jsm` it will be output as
+`resource_managed/src/main/js/script-4.js`
+
+This is only half of the puzzle, though. In order to know what that suffix is in your code,
+you can use the [sbt-buildinfo](https://github.com/sbt/sbt-buildinfo) plugin. Add the plugin
+to your project, then add the following to your build.sbt:
+
+    seq(buildInfoSettings: _*)
+
+    buildInfoPackage := "mypackage"
+
+    buildInfoKeys := Seq[Scoped](ClosureKeys.suffix in (Compile, ClosureKeys.closure))
+
+    sourceGenerators in Compile <+= buildInfo
+
+This will generate a Scala file with your suffix in `src_managed/main/BuildInfo.scala` and
+you can access it in your code like this:
+
+    mypackage.BuildInfo.closure_suffix
+
+In my Lift project I have the following snippet:
+
+    package mypackage
+    package snippet
+
+    import net.liftweb._
+    import util.Helpers._
+
+    object JavaScript {
+      def render = "* [src]" #> "/js/script-%s.js".format(BuildInfo.closure_suffix)
+    }
+
+Which is called in my template like:
+
+    <script lift="JavaScript"></script>
+
 ## Acknowledgements
 
 This plugin is a sbt 0.11.2 port of

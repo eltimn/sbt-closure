@@ -17,7 +17,7 @@ object SbtClosurePlugin extends Plugin {
     lazy val downloadDirectory = SettingKey[File]("download-dir", "Directory to download ManifestUrls to")
     lazy val prettyPrint = SettingKey[Boolean]("pretty-print", "Whether to pretty print JavaScript (default false)")
     lazy val closureOptions = SettingKey[CompilerOptions]("options", "Compiler options")
-    lazy val outAppend = SettingKey[String]("outappend", "String to append to output filename (before file extension)")
+    lazy val suffix = SettingKey[String]("suffix", "String to append to output filename (before file extension)")
   }
 
   def closureOptionsSetting: Initialize[CompilerOptions] =
@@ -51,7 +51,7 @@ object SbtClosurePlugin extends Plugin {
     closureOptions <<= closureOptionsSetting,
     includeFilter in closure := "*.jsm",
     excludeFilter in closure := (".*" - ".") || HiddenFileFilter,
-    outAppend in closure := "",
+    suffix in closure := "",
     unmanagedSources in closure <<= closureSourcesTask,
     clean in closure <<= closureCleanTask,
     closure <<= closureCompilerTask
@@ -67,12 +67,12 @@ object SbtClosurePlugin extends Plugin {
   private def closureCompilerTask =
     (streams, sourceDirectory in closure, resourceManaged in closure,
      includeFilter in closure, excludeFilter in closure, charset in closure,
-     downloadDirectory in closure, closureOptions in closure, outAppend in closure) map {
-      (out, sources, target, include, exclude, charset, downloadDir, options, outAppend) => {
+     downloadDirectory in closure, closureOptions in closure, suffix in closure) map {
+      (out, sources, target, include, exclude, charset, downloadDir, options, suffix) => {
         // compile changed sources
         (for {
           manifest <- sources.descendentsExcept(include, exclude).get
-          outFile <- computeOutFile(sources, manifest, target, outAppend)
+          outFile <- computeOutFile(sources, manifest, target, suffix)
           if (manifest newerThan outFile)
         } yield { (manifest, outFile) }) match {
           case Nil =>
@@ -102,9 +102,9 @@ object SbtClosurePlugin extends Plugin {
 
   private def compiled(under: File) = (under ** "*.js").get
 
-  private def computeOutFile(sources: File, manifest: File, targetDir: File, outAppend: String): Option[File] = {
+  private def computeOutFile(sources: File, manifest: File, targetDir: File, suffix: String): Option[File] = {
     val outFile = IO.relativize(sources, manifest).get.replaceAll("""[.]jsm(anifest)?$""", "") + {
-      if (outAppend.length > 0) "-%s.js".format(outAppend)
+      if (suffix.length > 0) "-%s.js".format(suffix)
       else ".js"
     }
     Some(new File(targetDir, outFile))
