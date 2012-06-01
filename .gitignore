@@ -1,2 +1,5 @@
 project/
 target/
+
+# sublime-text
+*.sublime-*

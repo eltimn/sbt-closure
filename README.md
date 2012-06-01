@@ -13,7 +13,7 @@ If you have not already added the sbt community plugin resolver to your plugin d
       new URL("http://scalasbt.artifactoryonline.com/scalasbt/sbt-plugin-releases/"))(
         Resolver.ivyStylePatterns)
 
-Then add this
+Then add this (see [ls.implicit.ly](http://ls.implicit.ly/eltimn/sbt-closure#sbt-closure) for current version)
 
     addSbtPlugin("org.scala-sbt" % "sbt-closure" % "0.1.0")
 
@@ -57,6 +57,11 @@ If, on compilation, the plugin finds remote scripts already cached on your
 filesystem, it won't try to download them again. Running `sbt clean` will
 delete the cache.
 
+## Tasks
+
+The plugin is tied to the compile task and will run whenver compile is run. You can
+also run `closure` to run it on its own. `clean(for closure)` will delete the generated files.
+
 ## Customization
 
 If you're using [xsbt-web-plugin](https://github.com/siasia/xsbt-web-plugin "xsbt-web-plugin"), add the output files to the webapp with:
@@ -72,7 +77,7 @@ If you're using [xsbt-web-plugin](https://github.com/siasia/xsbt-web-plugin "xsb
 
 To change the default location of compiled js files, add the following to your build definition
 
-    (resourceManaged in (Compile, ClosureKeys.closure)) <<= (crossTarget in Compile)(_ / "your_preference" / "js")
+    (resourceManaged in (Compile, ClosureKeys.closure)) <<= (resourceManaged in Compile)(_ / "your_preference" / "js")
 
 ## File versioning
 
