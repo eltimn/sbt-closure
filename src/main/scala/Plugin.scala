@@ -71,7 +71,7 @@ object SbtClosurePlugin extends Plugin {
       (out, sources, target, include, exclude, charset, downloadDir, options, suffix) => {
         // compile changed sources
         (for {
-          manifest <- sources.descendentsExcept(include, exclude).get
+          manifest <- sources.descendantsExcept(include, exclude).get
           outFile <- computeOutFile(sources, manifest, target, suffix)
           if (manifest newerThan outFile)
         } yield { (manifest, outFile) }) match {
@@ -89,7 +89,7 @@ object SbtClosurePlugin extends Plugin {
   private def closureSourcesTask =
     (sourceDirectory in closure, includeFilter in closure, excludeFilter in closure) map {
       (sourceDir, incl, excl) =>
-         sourceDir.descendentsExcept(incl, excl).get
+         sourceDir.descendantsExcept(incl, excl).get
     }
 
   private def doCompile(downloadDir: File, charset: Charset, log: Logger, options: CompilerOptions)(pair: (File, File)) = {

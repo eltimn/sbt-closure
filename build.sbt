@@ -6,6 +6,7 @@ name := "sbt-closure"
 
 version <<= sbtVersion(v =>
   if(v.startsWith("0.11")) "0.1.2"
+  else if(v.startsWith("0.12")) "0.1.3"
   else error("unsupported sbt version %s" format v)
 )
 
@@ -24,7 +25,7 @@ seq(lsSettings:_*)
 
 homepage := Some(url("https://github.com/eltimn/sbt-closure"))
 
-publishTo := Some(Resolver.url("sbt-plugin-releases", new URL("http://scalasbt.artifactoryonline.com/scalasbt/sbt-plugin-releases/"))(Resolver.ivyStylePatterns))
+publishTo := Some(Resolver.url("publishTo", new URL("http://scalasbt.artifactoryonline.com/scalasbt/sbt-plugin-releases/"))(Resolver.ivyStylePatterns))
 
 publishMavenStyle := false
 
@@ -45,3 +46,5 @@ pomExtra := (
     </developer>
   </developers>
 )
+
+scalacOptions := Seq("-deprecation", "-unchecked", "-encoding", "utf8")
