@@ -79,6 +79,26 @@ To change the default location of compiled js files, add the following to your b
 
     (resourceManaged in (Compile, ClosureKeys.closure)) <<= (resourceManaged in Compile)(_ / "your_preference" / "js")
 
+### Changing compiler flags:
+
+To change the default google javascript compiler flags, add the following to your build definition
+
+    (ClosureKeys.advancedCompilerFlags  in (Compile,  ClosureKeys.closure)) := {
+    import com.google.javascript.jscomp.CompilationLevel
+    val flags = new CompilerFlags
+    flags.compilation_level = CompilationLevel.ADVANCED_OPTIMIZATIONS // default set to SIMPLE_OPTIMIZATIONS
+    flags
+    }
+
+For more details take a look at [closure-compiler command line source](http://code.google.com/p/closure-compiler/source/browse/trunk/src/com/google/javascript/jscomp/CommandLineRunner.java).
+
+#### Other compiler options:
+
+optimizeArgumentsArray : Provide formal names for elements of arguments array (default false)
+optimizeCalls : Remove unused parameters from call sites (default false)
+optimizeParameters : Remove unused and constant parameters (default false)
+optimizeReturns : Remove unused return values (default false)
+
 ## File versioning
 
 The plugin has a setting for a file suffix that is appended to the output file name before the file extension.
