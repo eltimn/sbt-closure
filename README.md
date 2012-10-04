@@ -102,6 +102,28 @@ to your project, then add the following to your build.sbt:
 
     sourceGenerators in Compile <+= buildInfo
 
+With sbt-buildinfo v0.2.0
+
+In plugins.sbt:
+
+    addSbtPlugin("com.eed3si9n" % "sbt-buildinfo" % "0.2.0")
+
+Then
+
+    buildInfoSettings
+
+    sourceGenerators in Compile <+= buildInfo
+
+    buildInfoKeys := Seq[BuildInfoKey](
+                        BuildInfoKey.map(name) { case (k, v) => "project" + k.capitalize -> v.capitalize },
+                        organization, version,
+                        scalaVersion, sbtVersion, buildInfoBuildNumber,
+                        ClosureKeys.suffix in (Compile, ClosureKeys.closure),
+                         "buildTime" -> {() -> System.currentTimeMillis} // re-computed each time at compile)
+                        )
+
+    buildInfoPackage := "mypackage"
+
 This will generate a Scala file with your suffix in `src_managed/main/BuildInfo.scala` and
 you can access it in your code like this:
 
