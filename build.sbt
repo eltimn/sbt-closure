@@ -4,15 +4,17 @@ organization := "org.scala-sbt"
 
 name := "sbt-closure"
 
+scalaVersion := "2.10.2"
+
 version <<= sbtVersion(v =>
   if(v.startsWith("0.11")) "0.1.2"
   else if(v.startsWith("0.12")) "0.1.3"
-  else error("unsupported sbt version %s" format v)
-)
+  else if(v.startsWith("0.13")) "0.1.4"
+  else error("unsupported sbt version %s" format v))
 
 libraryDependencies += "com.google.javascript" % "closure-compiler" % "r1741"
 
-libraryDependencies += "org.scalatest" %% "scalatest" % "1.6.1" % "test"
+libraryDependencies += "org.scalatest" %% "scalatest" % "1.9.1" % "test"
 
 seq(scriptedSettings:_*)
 

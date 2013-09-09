@@ -57,6 +57,7 @@ object SbtClosurePlugin extends Plugin {
     closure <<= closureCompilerTask
   )
 
+  // TODO: Clean JS files generated from LS
   private def closureCleanTask =
     (streams, resourceManaged in closure) map {
       (out, target) =>
@@ -78,6 +79,7 @@ object SbtClosurePlugin extends Plugin {
           case Nil =>
             out.log.debug("No JavaScript manifest files to compile")
           case xs =>
+            out.log.info("1936-14A")
             out.log.info("Compiling %d jsm files to %s" format(xs.size, target))
             xs map doCompile(downloadDir, charset, out.log, options)
             out.log.debug("Compiled %s jsm files" format xs.size)
@@ -96,8 +98,10 @@ object SbtClosurePlugin extends Plugin {
     val (jsm, js) = pair
     log.debug("Compiling %s" format jsm)
     val srcFiles = Manifest.files(jsm, downloadDir, charset)
-    val compiler = new Compiler(options)
-    compiler.compile(srcFiles, Nil, js, log)
+    lazy val compiler = new Compiler(options)
+    def onError(errors: List[String]): Unit = errors.foreach(log.error(_))
+    def onSuccess(files: List[File]): Unit = compiler.compile(files, Nil, js, log)
+    srcFiles.fold(onError, onSuccess)
   }
 
   private def compiled(under: File) = (under ** "*.js").get
