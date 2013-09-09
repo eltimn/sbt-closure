@@ -2,6 +2,9 @@
 
 [Simple Build Tool](http://www.scala-sbt.org/ "simple build tool") plugin for compiling JavaScript files from multiple sources using Google's Closure Compiler.
 
+The plugin comes with support for [LiveScript](http://livescript.net/ "livescript") files. Just reference a file with extension '.ls'.
+To compile livescript files the lsc compiler need to be installed.
+
 ## Settings
 
 
