@@ -3,3 +3,5 @@ target/
 
 # sublime-text
 *.sublime-*
+.idea
+.idea_modules

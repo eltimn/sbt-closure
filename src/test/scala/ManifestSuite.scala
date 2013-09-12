@@ -27,10 +27,10 @@ class ManifestSuite extends FunSuite with Manifest {
   }
 
   test("parse") {
-    expect(List(ManifestFile("foo.js"))){ parse(List("foo.js")) }
-    expect(List(ManifestFile("foo.js"),
+    expect(List(ManifestJsFile("foo.js"))){ parse(List("foo.js")) }
+    expect(List(ManifestJsFile("foo.js"),
                 ManifestUrl("http://untyped.com/"),
-                ManifestFile("bar.js"))){
+                ManifestJsFile("bar.js"))){
       parse("foo.js" :: "#A Comment" :: "http://untyped.com/ #T3h best website evar!" :: "" :: "bar.js" :: Nil)
     }
   }
