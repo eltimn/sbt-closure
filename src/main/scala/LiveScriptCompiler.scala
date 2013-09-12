@@ -12,7 +12,7 @@ import EitherExtras._
  *
  */
 object LiveScriptCompiler {
-  def compile(input: File, output: File) = {
+  def compile(input: File, output: File): Either[String, File] = {
     lazy val lscCommand:Seq[String] = Seq("lsc", "-c", "-p", input.toString)
     // TODO: Catch errors in write process
     // This info is not logged!?!?!?! Why?

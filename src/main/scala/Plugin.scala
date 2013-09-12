@@ -3,7 +3,7 @@ package sbtclosure
 import java.nio.charset.Charset
 
 import sbt._
-import sbt.Project.Initialize
+//import sbt.Project.Initialize
 
 import com.google.javascript.jscomp.CompilerOptions
 
@@ -12,30 +12,38 @@ object SbtClosurePlugin extends Plugin {
   import ClosureKeys._
 
   object ClosureKeys {
-    lazy val closure = TaskKey[Seq[File]]("closure", "Compiles .jsm javascript manifest files")
+    val closure = taskKey[Seq[File]]("Compiles .jsm javascript manifest files")
     lazy val charset = SettingKey[Charset]("charset", "Sets the character encoding used in file IO. Defaults to utf-8")
-    lazy val downloadDirectory = SettingKey[File]("download-dir", "Directory to download ManifestUrls to")
-    lazy val prettyPrint = SettingKey[Boolean]("pretty-print", "Whether to pretty print JavaScript (default false)")
-    lazy val closureOptions = SettingKey[CompilerOptions]("options", "Compiler options")
-    lazy val suffix = SettingKey[String]("suffix", "String to append to output filename (before file extension)")
+    val downloadDirectory = settingKey[File]("Directory to download ManifestUrls to")
+    lazy val livescriptOutput = SettingKey[File]("livescript-output", "Directory where to generate output js from livescript scripts")
+    val prettyPrint = settingKey[Boolean]("Whether to pretty print JavaScript (default false)")
+    val closureOptions = settingKey[CompilerOptions]("Compiler options")
+    val suffix = settingKey[Option[String]]("String to append to output filename (before extension")
   }
 
-  def closureOptionsSetting: Initialize[CompilerOptions] =
+  /*def closureOptionsSetting: Def.Initialize[CompilerOptions] =
     (streams, prettyPrint in closure) apply {
       (out, prettyPrint) =>
         val options = new CompilerOptions
         options.prettyPrint = prettyPrint
         options
-    }
+    }*/
+
+  lazy val closureOptionsImpl = Def.setting {
+    val options = new CompilerOptions
+    options.prettyPrint = (prettyPrint in closure).value
+    options
+  }
 
   def closureSettings: Seq[Setting[_]] =
     closureSettingsIn(Compile) ++ closureSettingsIn(Test)
 
   def closureSettingsIn(conf: Configuration): Seq[Setting[_]] =
     inConfig(conf)(closureSettings0 ++ Seq(
-      sourceDirectory in closure <<= (sourceDirectory in conf) { _ / "javascript" },
-      resourceManaged in closure <<= (resourceManaged in conf) { _ / "js" },
-      downloadDirectory in closure <<= (target in conf) { _ / "closure-downloads" },
+      sourceDirectory in closure := (sourceDirectory in conf).value / "javascript",
+      resourceManaged in closure := (resourceManaged in conf).value / "js",
+      downloadDirectory in closure := (target in conf).value / "closure-downloads",
+      livescriptOutput in closure := (target in conf).value / "livescript-output",
       cleanFiles in closure <<= (resourceManaged in closure, downloadDirectory in closure)(_ :: _ :: Nil),
       watchSources <<= (unmanagedSources in closure)
     )) ++ Seq(
@@ -48,22 +56,38 @@ object SbtClosurePlugin extends Plugin {
   def closureSettings0: Seq[Setting[_]] = Seq(
     charset in closure := Charset.forName("utf-8"),
     prettyPrint := false,
-    closureOptions <<= closureOptionsSetting,
+    closureOptions := closureOptionsImpl.value,
     includeFilter in closure := "*.jsm",
     excludeFilter in closure := (".*" - ".") || HiddenFileFilter,
-    suffix in closure := "",
-    unmanagedSources in closure <<= closureSourcesTask,
-    clean in closure <<= closureCleanTask,
+    suffix in closure := None,
+    unmanagedSources in closure := sourcesTaskImpl.value,
+    (clean in closure) := cleanTaskImpl.value,
     closure <<= closureCompilerTask
   )
 
-  // TODO: Clean JS files generated from LS
-  private def closureCleanTask =
-    (streams, resourceManaged in closure) map {
-      (out, target) =>
-        out.log.info("Cleaning generated JavaScript under " + target)
-        IO.delete(target)
-    }
+  lazy val cleanTaskImpl: Def.Initialize[Task[Unit]] = Def.task {
+    streams.value.log.info("Cleaning generated JavaScript under " + target)
+    IO.delete(resourceManaged.value :: livescriptOutput.value :: Nil)
+  }
+
+  lazy val compilerTask = Def.task {
+    val out = streams.value.log
+    val manifestFile = (m: File) => IO.relativize((sourceDirectory in compile) value, m)
+    val manifestsList = for {
+      manifest <- (unmanagedSources in closure).value
+      _file = manifestFile(manifest).get.replaceAll("""[.]jsm(anifest)?$""","")
+      _suffix = (suffix in closure).value.map("-" ++ _ ).getOrElse("")
+      outFile <- (resourceManaged in compile).value / (s"${_file}.${_suffix}.js")
+    } yield (manifest, outFile)
+    manifestsList.foreach ((p:(File, File)) => {
+      doCompile(
+        (downloadDirectory in closure) value,
+        charset.value,
+        out,
+        (closureOptions in closure).value)(p)
+    })
+    ((unmanagedResources in closure).value ** "*.js").get
+  }
 
   private def closureCompilerTask =
     (streams, sourceDirectory in closure, resourceManaged in closure,
@@ -73,7 +97,7 @@ object SbtClosurePlugin extends Plugin {
         // compile changed sources
         (for {
           manifest <- sources.descendantsExcept(include, exclude).get
-          outFile <- computeOutFile(sources, manifest, target, suffix)
+          outFile <- computeOutFile(sources, manifest, target, suffix.getOrElse(""))
           if (manifest newerThan outFile)
         } yield { (manifest, outFile) }) match {
           case Nil =>
@@ -88,11 +112,11 @@ object SbtClosurePlugin extends Plugin {
       }
     }
 
-  private def closureSourcesTask =
-    (sourceDirectory in closure, includeFilter in closure, excludeFilter in closure) map {
-      (sourceDir, incl, excl) =>
-         sourceDir.descendantsExcept(incl, excl).get
-    }
+  lazy val sourcesTaskImpl: Def.Initialize[Task[Seq[File]]] = Def.task {
+    (sourceDirectory in closure).value.descendantsExcept(
+      (includeFilter in closure).value,
+      (excludeFilter in closure).value).get
+  }
 
   private def doCompile(downloadDir: File, charset: Charset, log: Logger, options: CompilerOptions)(pair: (File, File)) = {
     val (jsm, js) = pair
@@ -112,5 +136,9 @@ object SbtClosurePlugin extends Plugin {
       else ".js"
     }
     Some(new File(targetDir, outFile))
+  }
+
+  private def computeOutFile2 = {
+
   }
 }
