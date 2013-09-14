@@ -6,6 +6,7 @@ resolvers ++= Seq(
   "coda" at "http://repo.codahale.com"
 )
 
+
 libraryDependencies <+= sbtVersion { v =>
   "org.scala-sbt" % "scripted-plugin" % v
 }

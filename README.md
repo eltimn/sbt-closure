@@ -64,7 +64,7 @@ also run `closure` to run it on its own. `clean(for closure)` will delete the ge
 
 ## Customization
 
-If you're using [xsbt-web-plugin](https://github.com/siasia/xsbt-web-plugin "xsbt-web-plugin"), add the output files to the webapp with:
+If you're using [xsbt-web-plugin](https://github.com/JamesEarlDouglas/xsbt-web-plugin "xsbt-web-plugin"), add the output files to the webapp with:
 
     // add managed resources to the webapp
     (webappResources in Compile) <+= (resourceManaged in Compile)
