@@ -1,0 +1,21 @@
+{
+  "organization" : "org.scala-sbt",
+  "name" : "sbt-closure",
+  "version" : "0.1.4",
+  "description" : "Sbt plugin for compiling JavaScript manifest sources using Google Closure Compiler",
+  "site" : "https://github.com/eltimn/sbt-closure",
+  "tags" : [ "sbt", "closure" ],
+  "docs" : "",
+  "resolvers" : [ "https://oss.sonatype.org/content/repositories/releases" ],
+  "dependencies" : [ {
+    "organization" : "com.google.javascript",
+    "name" : "closure-compiler",
+    "version" : "r1741"
+  }],
+  "scalas" : [ "2.10.2" ],
+  "licenses" : [ {
+    "name" : "Apache License 2.0",
+    "url" : "https://github.com/eltimn/sbt-closure/raw/master/LICENSE"
+  } ],
+  "sbt" : true
+}
