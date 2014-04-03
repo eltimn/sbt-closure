@@ -98,9 +98,6 @@ object SbtClosurePlugin extends Plugin {
     val (jsm, js) = pair
     log.debug("Compiling %s" format jsm)
     val srcFiles = Manifest.files(jsm, downloadDir, charset)
-    val externFiles = (sourceDirectory in closure) map { sources =>
-      sources
-    }
     val compiler = new Compiler(options)
     compiler.compile(srcFiles, externs, js, log)
   }
