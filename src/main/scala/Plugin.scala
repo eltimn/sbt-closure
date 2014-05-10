@@ -41,9 +41,6 @@ object SbtClosurePlugin extends Plugin {
     )) ++ Seq(
       cleanFiles <++= (cleanFiles in closure in conf),
       watchSources <++= (watchSources in closure in conf),
-//      watchSources <++= ((sourceDirectory in closure) map {
-//        dir => dir.descendantsExcept("*.js", HiddenFileFilter)
-//      }),
       resourceGenerators in conf <+= closure in conf,
       compile in conf <<= (compile in conf).dependsOn(closure in conf)
     )
@@ -78,7 +75,8 @@ object SbtClosurePlugin extends Plugin {
         (for {
           manifest <- sources.descendantsExcept("*.jsm", exclude).get
           outFile <- computeOutFile(sources, manifest, target, suffix)
-          if (manifest newerThan outFile)
+          if ((manifest newerThan outFile) || 
+              (Manifest.files(manifest, downloadDir, charset).exists(_ newerThan outFile)))
         } yield { (manifest, outFile) }) match {
           case Nil =>
             out.log.debug("No JavaScript manifest files to compile")
