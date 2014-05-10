@@ -7,28 +7,28 @@ import java.io.File
 class ManifestSuite extends FunSuite with Manifest {
 
   test("stripComments") {
-    expectResult(""){ stripComments("#this and that") }
-    expectResult(""){ stripComments("  #this and that") }
-    expectResult(""){ stripComments("#") }
-    expectResult(""){ stripComments("###") }
+    assertResult(""){ stripComments("#this and that") }
+    assertResult(""){ stripComments("  #this and that") }
+    assertResult(""){ stripComments("#") }
+    assertResult(""){ stripComments("###") }
 
-    expectResult("this and that"){ stripComments("this and that  #this and that") }
-    expectResult("this and that"){ stripComments("this and that") }
+    assertResult("this and that"){ stripComments("this and that  #this and that") }
+    assertResult("this and that"){ stripComments("this and that") }
   }
 
   test("isUrl") {
-    expectResult(true){ isUrl("http://www.untyped.com/") }
-    expectResult(true){ isUrl("https://www.untyped.com/") }
-    expectResult(true){ isUrl("   http://www.untyped.com/  ") }
+    assertResult(true){ isUrl("http://www.untyped.com/") }
+    assertResult(true){ isUrl("https://www.untyped.com/") }
+    assertResult(true){ isUrl("   http://www.untyped.com/  ") }
 
-    expectResult(false){ isUrl("foobar") }
-    expectResult(false){ isUrl("untyped.com") }
-    expectResult(false){ isUrl("#http://www.untyped.com/") }
+    assertResult(false){ isUrl("foobar") }
+    assertResult(false){ isUrl("untyped.com") }
+    assertResult(false){ isUrl("#http://www.untyped.com/") }
   }
 
   test("parse") {
-    expectResult(List(ManifestFile("foo.js"))){ parse(List("foo.js")) }
-    expectResult(List(ManifestFile("foo.js"),
+    assertResult(List(ManifestFile("foo.js"))){ parse(List("foo.js")) }
+    assertResult(List(ManifestFile("foo.js"),
                 ManifestUrl("http://untyped.com/"),
                 ManifestFile("bar.js"))){
       parse("foo.js" :: "#A Comment" :: "http://untyped.com/ #T3h best website evar!" :: "" :: "bar.js" :: Nil)
@@ -42,8 +42,8 @@ class ManifestSuite extends FunSuite with Manifest {
   }
 
   test("ManifestUrl filenames"){
-    expectResult("http___untyped.com_"){ ManifestUrl("http://untyped.com/").filename }
-    expectResult("http___code.jquery.com_jquery_1.5.1.js"){
+    assertResult("http___untyped.com_"){ ManifestUrl("http://untyped.com/").filename }
+    assertResult("http___code.jquery.com_jquery_1.5.1.js"){
       ManifestUrl("http://code.jquery.com/jquery-1.5.1.js").filename
     }
   }

@@ -8,7 +8,7 @@ version := "0.1.5-SNAPSHOT"
 
 libraryDependencies += "com.google.javascript" % "closure-compiler" % "v20131014"
 
-libraryDependencies += "org.scalatest" %% "scalatest" % "1.9.1" % "test"
+libraryDependencies += "org.scalatest" %% "scalatest" % "1.9.2" % "test"
 
 seq(scriptedSettings:_*)
 
