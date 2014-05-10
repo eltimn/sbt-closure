@@ -41,6 +41,9 @@ object SbtClosurePlugin extends Plugin {
     )) ++ Seq(
       cleanFiles <++= (cleanFiles in closure in conf),
       watchSources <++= (watchSources in closure in conf),
+//      watchSources <++= ((sourceDirectory in closure) map {
+//        dir => dir.descendantsExcept("*.js", HiddenFileFilter)
+//      }),
       resourceGenerators in conf <+= closure in conf,
       compile in conf <<= (compile in conf).dependsOn(closure in conf)
     )
@@ -49,7 +52,7 @@ object SbtClosurePlugin extends Plugin {
     charset in closure := Charset.forName("utf-8"),
     prettyPrint := false,
     closureOptions <<= closureOptionsSetting,
-    includeFilter in closure := "*.jsm",
+    includeFilter in closure := "*.js*",
     excludeFilter in closure := (".*" - ".") || ("externs") || HiddenFileFilter,
     suffix in closure := "",
     unmanagedSources in closure <<= closureSourcesTask,
@@ -73,7 +76,7 @@ object SbtClosurePlugin extends Plugin {
           (sources / "externs").descendantsExcept("*.js", HiddenFileFilter).get.toList
         // compile changed sources
         (for {
-          manifest <- sources.descendantsExcept(include, exclude).get
+          manifest <- sources.descendantsExcept("*.jsm", exclude).get
           outFile <- computeOutFile(sources, manifest, target, suffix)
           if (manifest newerThan outFile)
         } yield { (manifest, outFile) }) match {
