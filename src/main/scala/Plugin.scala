@@ -49,8 +49,8 @@ object SbtClosurePlugin extends Plugin {
     charset in closure := Charset.forName("utf-8"),
     prettyPrint := false,
     closureOptions <<= closureOptionsSetting,
-    includeFilter in closure := "*.jsm",
-    excludeFilter in closure := (".*" - ".") || HiddenFileFilter,
+    includeFilter in closure := "*.js*",
+    excludeFilter in closure := (".*" - ".") || ("externs") || HiddenFileFilter,
     suffix in closure := "",
     unmanagedSources in closure <<= closureSourcesTask,
     clean in closure <<= closureCleanTask,
@@ -69,17 +69,20 @@ object SbtClosurePlugin extends Plugin {
      includeFilter in closure, excludeFilter in closure, charset in closure,
      downloadDirectory in closure, closureOptions in closure, suffix in closure) map {
       (out, sources, target, include, exclude, charset, downloadDir, options, suffix) => {
+        val externs = 
+          (sources / "externs").descendantsExcept("*.js", HiddenFileFilter).get.toList
         // compile changed sources
         (for {
-          manifest <- sources.descendantsExcept(include, exclude).get
+          manifest <- sources.descendantsExcept("*.jsm", exclude).get
           outFile <- computeOutFile(sources, manifest, target, suffix)
-          if (manifest newerThan outFile)
+          if ((manifest newerThan outFile) || 
+              (Manifest.files(manifest, downloadDir, charset).exists(_ newerThan outFile)))
         } yield { (manifest, outFile) }) match {
           case Nil =>
             out.log.debug("No JavaScript manifest files to compile")
           case xs =>
             out.log.info("Compiling %d jsm files to %s" format(xs.size, target))
-            xs map doCompile(downloadDir, charset, out.log, options)
+            xs map doCompile(downloadDir, charset, out.log, options, externs)
             out.log.debug("Compiled %s jsm files" format xs.size)
         }
         compiled(target)
@@ -92,12 +95,12 @@ object SbtClosurePlugin extends Plugin {
          sourceDir.descendantsExcept(incl, excl).get
     }
 
-  private def doCompile(downloadDir: File, charset: Charset, log: Logger, options: CompilerOptions)(pair: (File, File)) = {
+  private def doCompile(downloadDir: File, charset: Charset, log: Logger, options: CompilerOptions, externs: List[File])(pair: (File, File)) = {
     val (jsm, js) = pair
     log.debug("Compiling %s" format jsm)
     val srcFiles = Manifest.files(jsm, downloadDir, charset)
     val compiler = new Compiler(options)
-    compiler.compile(srcFiles, Nil, js, log)
+    compiler.compile(srcFiles, externs, js, log)
   }
 
   private def compiled(under: File) = (under ** "*.js").get

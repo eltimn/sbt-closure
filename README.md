@@ -49,7 +49,7 @@ should contain ordered lists of JavaScript source locations. For example:
 
 The plugin compiles this in two phases: first, it downloads and caches any
 remote scripts. Second, it feeds all of the specified scripts into the Closure
-compiler. The compiler outputs a file with the same name but with a `.js` extension under
+Compiler. The compiler outputs a file with the same name but with a `.js` extension under
 `path/to/resource_managed/main/js`
 
 For example, if your manifest
@@ -59,6 +59,12 @@ path would be `resource_managed/main/js/foo.js` in the target tree.
 If, on compilation, the plugin finds remote scripts already cached on your
 filesystem, it won't try to download them again. Running `sbt clean` will
 delete the cache.
+
+### Externs
+
+To use externs add an `externs` directory in your JavaScript source dir (e.g.:
+`src/main/javascript/externs`).  Any JavaScript files within the `externs`
+directory will be passed to the Closure Compiler as externs.
 
 ## Tasks
 
@@ -128,7 +134,8 @@ Which is called in my template like:
 
 ## Acknowledgements
 
-This plugin is a sbt 0.11.2 port of
+This plugin was originally an sbt 0.11.2 port of
 [sbt-closure](https://github.com/davegurnell/sbt-closure)
 
 It was modeled after and heavily influenced by [less-sbt](https://github.com/softprops/less-sbt "less-sbt")
+
