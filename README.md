@@ -1,3 +1,6 @@
+_NOTE_: This project is no longer maintained. You might want to look at [sbt-web](https://github.com/sbt/sbt-web) which has a closure complier.
+
+
 # sbt-closure
 
 [Simple Build Tool](http://www.scala-sbt.org/ "simple build tool") plugin for compiling JavaScript files from multiple sources using Google's Closure Compiler.
