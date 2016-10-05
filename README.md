@@ -82,6 +82,26 @@ To change the default location of compiled js files, add the following to your b
 
     (resourceManaged in (Compile, ClosureKeys.closure)) <<= (resourceManaged in Compile)(_ / "your_preference" / "js")
 
+### Changing compiler flags:
+
+To change the default google javascript compiler flags, add the following to your build definition
+
+    (ClosureKeys.advancedCompilerFlags  in (Compile,  ClosureKeys.closure)) := {
+    import com.google.javascript.jscomp.CompilationLevel
+    val flags = new CompilerFlags
+    flags.compilation_level = CompilationLevel.ADVANCED_OPTIMIZATIONS // default set to SIMPLE_OPTIMIZATIONS
+    flags
+    }
+
+For more details take a look at [closure-compiler command line source](http://code.google.com/p/closure-compiler/source/browse/trunk/src/com/google/javascript/jscomp/CommandLineRunner.java).
+
+#### Other compiler options:
+
+optimizeArgumentsArray : Provide formal names for elements of arguments array (default false)
+optimizeCalls : Remove unused parameters from call sites (default false)
+optimizeParameters : Remove unused and constant parameters (default false)
+optimizeReturns : Remove unused return values (default false)
+
 ## File versioning
 
 The plugin has a setting for a file suffix that is appended to the output file name before the file extension.
@@ -104,6 +124,28 @@ to your project, then add the following to your build.sbt:
     buildInfoKeys := Seq[Scoped](ClosureKeys.suffix in (Compile, ClosureKeys.closure))
 
     sourceGenerators in Compile <+= buildInfo
+
+With sbt-buildinfo v0.2.0
+
+In plugins.sbt:
+
+    addSbtPlugin("com.eed3si9n" % "sbt-buildinfo" % "0.2.0")
+
+Then
+
+    buildInfoSettings
+
+    sourceGenerators in Compile <+= buildInfo
+
+    buildInfoKeys := Seq[BuildInfoKey](
+                        BuildInfoKey.map(name) { case (k, v) => "project" + k.capitalize -> v.capitalize },
+                        organization, version,
+                        scalaVersion, sbtVersion, buildInfoBuildNumber,
+                        ClosureKeys.suffix in (Compile, ClosureKeys.closure),
+                         "buildTime" -> {() -> System.currentTimeMillis} // re-computed each time at compile)
+                        )
+
+    buildInfoPackage := "mypackage"
 
 This will generate a Scala file with your suffix in `src_managed/main/BuildInfo.scala` and
 you can access it in your code like this:
